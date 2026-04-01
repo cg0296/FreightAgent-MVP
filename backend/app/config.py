@@ -29,12 +29,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
 
     # CORS
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-    ]
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"
 
     @field_validator("DEBUG", mode="before")
     @classmethod
@@ -47,17 +42,14 @@ class Settings(BaseSettings):
                 return False
         return value
 
-    @field_validator("CORS_ORIGINS", mode="before")
-    @classmethod
-    def normalize_cors_origins(cls, value):
-        if isinstance(value, str):
-            stripped = value.strip()
-            if not stripped:
-                return []
-            if stripped.startswith("["):
-                return json.loads(stripped)
-            return [origin.strip() for origin in stripped.split(",") if origin.strip()]
-        return value
+    @property
+    def cors_origins_list(self) -> List[str]:
+        stripped = self.CORS_ORIGINS.strip()
+        if not stripped:
+            return []
+        if stripped.startswith("["):
+            return json.loads(stripped)
+        return [origin.strip() for origin in stripped.split(",") if origin.strip()]
 
 
 settings = Settings()
